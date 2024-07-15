@@ -1,5 +1,6 @@
 import { useState } from "react";
 import openai from "./lib/openai";
+import Markdown from "react-markdown";
 
 const prompt = `
   あなたはシニアエンジニアです。
@@ -11,8 +12,10 @@ const prompt = `
 function App() {
   const [content, setContent] = useState("");
   const [result, setResult] = useState("");
+  const [isLoading,setIsLoading] = useState(false)
 
   const review = async () => {
+    setIsLoading(true)
     const messages = [{
       role: "user",
       content: prompt + content,
@@ -20,6 +23,7 @@ function App() {
     try {
       const result = await openai.completion(messages);
       setResult(result);
+      setIsLoading(false)
     } catch (error) {
       console.error("Error during review:", error);
       setResult("エラーが発生しました。もう一度お試しください。");
@@ -36,13 +40,13 @@ function App() {
           <div className="flex-1 p-4 text-white">
             <textarea onChange={(e) => setContent(e.target.value)} className="h-full w-full bg-transparent text-white resize-none outline-none" />
           </div>
-          <button onClick={review} className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-            レビューする
+          <button disabled={isLoading} onClick={review} className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+            {isLoading ?  "レビュー中":"レビューする"}
           </button>
         </div>
         <div className="flex flex-col w-1/2 h-full items-center justify-center">
           <div className="p-4 overflow-y-auto w-full">
-            {result}
+            {isLoading ? "レビュー中" : <Markdown className="markdown">{result}</Markdown>}
           </div>
         </div>
       </main>
